@@ -443,7 +443,7 @@ I18n.pluralize = function(count, scope, options) {
   options = this.prepareOptions(options);
   options.count = count.toString();
   
-  var key = (I18n.plurals[I18n.currentLocale()] || I18n.plurals[I18n.currentShortLocale()])(count);
+  var key = (I18n.plurals[I18n.currentLocale()] || I18n.plurals[I18n.currentLocale().replace('_', '-')] || I18n.plurals[I18n.currentShortLocale()])(count);
   message = this.isValidNode(translation, key) ? translation[key] : 
             this.isValidNode(translation, 'other') ? translation['other'] : 
             this.missingTranslation(scope, "other");
