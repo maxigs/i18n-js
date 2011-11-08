@@ -16,21 +16,55 @@ I18n.locale = null;
 // Set the placeholder format. Accepts `{{placeholder}}` and `%{placeholder}`.
 I18n.PLACEHOLDER = /(?:\{\{|%\{)(.*?)(?:\}\}?)/gm;
 
+// Pluralization for the following languages:
+// - German
+// - English
+// - Spanish
+// - French
+// - Italian
+// - Dutch
+// - Polish
+// - Portuguese for Portugal
+// - Russian
+// - Turkish
+I18n.plurals = {
+  'de': function(count) { return count === 0 ? 'zero' : count === 1 ? 'one' : 'other'; },
+  'en': function(count) { return count === 0 ? 'zero' : count === 1 ? 'one' : 'other'; },
+  'es': function(count) { return count === 0 ? 'zero' : count === 1 ? 'one' : 'other'; },
+  'fr': function(count) { return count === 0 ? 'zero' : (count && count !== 2) ? 'one' : 'other'; },
+  'it': function(count) { return count === 0 ? 'zero' : count === 1 ? 'one' : 'other'; },
+  'nl': function(count) { return count === 0 ? 'zero' : count === 1 ? 'one' : 'other'; },
+  'pl': function(count) { return count === 0 ? 'zero' : count === 1 ? 'one' : (I18n.arrayContainsValue([2, 3, 4], count % 10) && !I18n.arrayContainsValue([12, 13, 14], count % 100)) ? 'few' : 'other'; },
+  'pt-PT': function(count) { return count === 0 ? 'zero' : count === 1 ? 'one' : 'other'; },
+  'ru': function(count) { return (count % 10 == 1 && count % 100 != 11) ? 'one' : (I18n.arrayContainsValue([2, 3, 4], count % 10) && !I18n.arrayContainsValue([12, 13, 14], count % 100)) ? 'few' : (count % 10 == 0 || I18n.arrayContainsValue([5, 6, 7, 8, 9], count % 10) || I18n.arrayContainsValue([11, 12, 13, 14], count % 100)) ? 'many' : 'other'; },
+  'tr': function(count) { return count === 0 ? 'zero' : 'other'; }
+};
+
+I18n.arrayContainsValue = function(array, value) {
+  var result;
+  
+  for(var v in array) {
+    result = (v === value);
+    if(result) break;
+  }
+  
+  return result;
+};
+
 I18n.isValidNode = function(obj, node, undefined) {
     return obj[node] !== null && obj[node] !== undefined;
-}
+};
 
 I18n.lookup = function(scope, options) {
-  var options = options || {}
-    , lookupInitialScope = scope
+  options = this.prepareOptions(options || {});
+  var lookupInitialScope = scope
     , translations = this.prepareOptions(I18n.translations)
     , messages = translations[options.locale || I18n.currentLocale()]
-    , options = this.prepareOptions(options)
     , currentScope
   ;
 
   if (!messages){
-    return;
+    return undefined;
   }
 
   if (typeof(scope) == "object") {
@@ -193,7 +227,7 @@ I18n.parseDate = function(date) {
   } else if (date.match(/\d+ \d+:\d+:\d+ [+-]\d+ \d+/)) {
     // a valid javascript format with timezone info
     convertedDate = new Date();
-    convertedDate.setTime(Date.parse(date))
+    convertedDate.setTime(Date.parse(date));
   } else {
     // an arbitrary javascript string
     convertedDate = new Date();
@@ -408,20 +442,11 @@ I18n.pluralize = function(count, scope, options) {
   var message;
   options = this.prepareOptions(options);
   options.count = count.toString();
-
-  switch(Math.abs(count)) {
-    case 0:
-      message = this.isValidNode(translation, "zero") ? translation.zero :
-                this.isValidNode(translation, "none") ? translation.none :
-                this.isValidNode(translation, "other") ? translation.other :
-                this.missingTranslation(scope, "zero");
-      break;
-    case 1:
-      message = this.isValidNode(translation, "one") ? translation.one : this.missingTranslation(scope, "one");
-      break;
-    default:
-      message = this.isValidNode(translation, "other") ? translation.other : this.missingTranslation(scope, "other");
-  }
+  
+  var key = (I18n.plurals[I18n.currentLocale()] || I18n.plurals[I18n.currentShortLocale()])(count);
+  message = this.isValidNode(translation, key) ? translation[key] : 
+            this.isValidNode(translation, 'other') ? translation['other'] : 
+            this.missingTranslation(scope, "other");
 
   return this.interpolate(message, options);
 };
@@ -442,6 +467,10 @@ I18n.missingTranslation = function() {
 
 I18n.currentLocale = function() {
   return (I18n.locale || I18n.defaultLocale);
+};
+
+I18n.currentShortLocale = function() {
+  return I18n.currentLocale().split('_')[0];
 };
 
 // shortcuts
