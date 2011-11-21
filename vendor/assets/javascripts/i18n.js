@@ -31,7 +31,7 @@ I18n.plurals = {
   'de': function(count) { return count === 0 ? 'zero' : count === 1 ? 'one' : 'other'; },
   'en': function(count) { return count === 0 ? 'zero' : count === 1 ? 'one' : 'other'; },
   'es': function(count) { return count === 0 ? 'zero' : count === 1 ? 'one' : 'other'; },
-  'fr': function(count) { return count === 0 ? 'zero' : (count && count !== 2) ? 'one' : 'other'; },
+  'fr': function(count) { return count === 0 ? 'zero' : (count && count < 2) ? 'one' : 'other'; },
   'it': function(count) { return count === 0 ? 'zero' : count === 1 ? 'one' : 'other'; },
   'nl': function(count) { return count === 0 ? 'zero' : count === 1 ? 'one' : 'other'; },
   'pl': function(count) { return count === 0 ? 'zero' : count === 1 ? 'one' : (I18n.arrayContainsValue([2, 3, 4], count % 10) && !I18n.arrayContainsValue([12, 13, 14], count % 100)) ? 'few' : 'other'; },
